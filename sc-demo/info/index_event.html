@@ -1,0 +1,101 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="main.css">
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+		<script src="./node_modules/web3/dist/web3.min.js"></script>
+		<!--<script src="./node_modules/web3/dist/web3.esm.js"></script>-->
+	</head>
+	<body>
+		<div class="container">
+			<h1>Info Contract</h1>
+			<h2 id="info"></h2>
+			 <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+			<label for="name" class="col-lg-2 control-label">Name</label>
+			<input id="name" type="text">
+			<label for="name" class="col-lg-2 control-label">Age</label>
+			<input id="age" type="text">
+			<button id="button">Update Info</button>
+		</div>
+		<script>
+			$("#loader").hide();
+			if (typeof web3 !== 'undefined') {
+				web3 = new Web3(web3.currentProvider);
+			} else {
+				web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+			}
+
+			web3.eth.defaultAccount = web3.eth.accounts[0];
+			var abi = [
+				{
+					"constant": true,
+					"inputs": [],
+					"name": "getInfo",
+					"outputs": [
+						{
+							"name": "",
+							"type": "string"
+						},
+						{
+							"name": "",
+							"type": "uint256"
+						}
+					],
+					"payable": false,
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"constant": false,
+					"inputs": [
+						{
+							"name": "_fName",
+							"type": "string"
+						},
+						{
+							"name": "_age",
+							"type": "uint256"
+						}
+					],
+					"name": "setInfo",
+					"outputs": [],
+					"payable": false,
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": false,
+							"name": "name",
+							"type": "string"
+						},
+						{
+							"indexed": false,
+							"name": "age",
+							"type": "uint256"
+						}
+					],
+					"name": "Instructor",
+					"type": "event"
+				}
+			]
+			var infoContract = web3.eth.contract(abi);
+			var info = infoContract.at("0xc0cb81c0f1417630a656e3b34ea605b7dec2408c");
+			var instructorEvent = info.Instructor();
+			instructorEvent.watch(function(error, result) {
+				if (!error) {
+					$("#loader").hide();
+					$("#info").html(result.args.name +' ('+ result.args.age + ' years old)');
+				} else {
+					$("#loader").hide();
+					console.error(error);
+				}
+			});
+			$("#button").click(function() {
+				$("#loader").show();
+				info.setInfo($("#name").val(), $("#age").val());
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,80 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="main.css">
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+		<script src="./node_modules/web3/dist/web3.min.js"></script>
+		<!--<script src="./node_modules/web3/dist/web3.esm.js"></script>-->
+	</head>
+	<body>
+		<div class="container">
+			<h1>Info Contract</h1>
+			<h2 id="info"></h2>
+			<label for="name" class="col-lg-2 control-label">Name</label>
+			<input id="name" type="text">
+			<label for="name" class="col-lg-2 control-label">Age</label>
+			<input id="age" type="text">
+			<button id="button">Update Info</button>
+		</div>
+		<script>
+			if (typeof web3 !== 'undefined') {
+				web3 = new Web3(web3.currentProvider);
+			} else {
+				web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+			}
+
+			web3.eth.defaultAccount = web3.eth.accounts[0];
+			var abi = [
+				{
+					"constant": true,
+					"inputs": [],
+					"name": "getInfo",
+					"outputs": [
+						{
+							"name": "",
+							"type": "string"
+						},
+						{
+							"name": "",
+							"type": "uint256"
+						}
+					],
+					"payable": false,
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"constant": false,
+					"inputs": [
+						{
+							"name": "_fName",
+							"type": "string"
+						},
+						{
+							"name": "_age",
+							"type": "uint256"
+						}
+					],
+					"name": "setInfo",
+					"outputs": [],
+					"payable": false,
+					"stateMutability": "nonpayable",
+					"type": "function"
+				}
+			]
+			var infoContract = web3.eth.contract(abi);
+			var info = infoContract.at("0x765b06d26e5e6fa8fe29af4e813e8764fc05251e");
+			info.getInfo(function(error, result){
+				if (!error) {
+					$("#info").html(result[0]+' ('+ result[1] + ' years old)');
+					console.log(result);
+				} else {
+					console.error(error);
+				}
+			});
+			$("#button").click(function() {
+				$("#loader").show();
+				info.setInfo($("#name").val(), $("#age").val());
+			});
+		</script>
+	</body>
+</html>
